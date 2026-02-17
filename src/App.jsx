@@ -185,8 +185,8 @@ export default function App() {
 
   const txCost1 = smallAptPrice * transactionCostPct / 100;
   const txCost2 = largeAptPrice * transactionCostPct / 100;
-  const mortgage1 = smallAptPrice - downPayment;
-  const mortgage2 = largeAptPrice - downPayment;
+  const mortgage1 = smallAptPrice + txCost1 - downPayment;
+  const mortgage2 = largeAptPrice + txCost2 - downPayment;
 
   const m1 = calcMortgage(mortgage1, interestRate, smallAptYears);
   const m2 = calcMortgage(mortgage2, interestRate, largeAptYears);
