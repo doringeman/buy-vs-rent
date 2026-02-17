@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 
 const translations = {
   ro: {
@@ -150,15 +150,25 @@ function mortgageInvestSimulation(monthlyBudget, payment, mortgageYears, ownerCo
 }
 
 export default function App() {
-  const [lang, setLang] = useState("ro");
-  const t = translations[lang];
-
-  const [inputs, setInputs] = useState({
+  const defaultInputs = {
     downPayment: "", interestRate: "", investReturn: "", newRent: "",
     smallAptPrice: "", largeAptPrice: "", smallAptYears: "", largeAptYears: "",
     horizon: "", appreciation: "", monthlyBudget: "",
     rentInflation: "", transactionCostPct: "", ownerCostPct: "",
+  };
+
+  const [lang, setLang] = useState(() => localStorage.getItem("bvr-lang") || "ro");
+  const t = translations[lang];
+
+  const [inputs, setInputs] = useState(() => {
+    try {
+      const saved = JSON.parse(localStorage.getItem("bvr-inputs"));
+      return saved ? { ...defaultInputs, ...saved } : defaultInputs;
+    } catch { return defaultInputs; }
   });
+
+  useEffect(() => { localStorage.setItem("bvr-inputs", JSON.stringify(inputs)); }, [inputs]);
+  useEffect(() => { localStorage.setItem("bvr-lang", lang); }, [lang]);
 
   const set = useCallback((key) => (e) => {
     setInputs(prev => ({ ...prev, [key]: e.target.value }));
