@@ -55,6 +55,8 @@ const translations = {
     note4: "✅ Investiții lunare din diferența buget - rată/chirie - costuri",
     note5: "⚠️ Nu include: inflația ratei (dacă dobândă variabilă), impozit pe câștig capital, inflația costurilor proprietar",
     summary: "COMPARAȚIE AVERE NETĂ",
+    copyLink: "Copiază link",
+    linkCopied: "Link copiat!",
     showFormulas: "▶ Arată formulele",
     hideFormulas: "▼ Ascunde formulele",
     fCredit: "Credit = Preț + Tranzacție - Avans",
@@ -126,6 +128,8 @@ const translations = {
     note4: "✅ Monthly investments from budget minus payment/rent minus costs",
     note5: "⚠️ Not included: variable rate changes, capital gains tax, owner cost inflation",
     summary: "NET WORTH COMPARISON",
+    copyLink: "Copy link",
+    linkCopied: "Link copied!",
     showFormulas: "▶ Show formulas",
     hideFormulas: "▼ Hide formulas",
     fCredit: "Mortgage = Price + Transaction - Down payment",
@@ -215,6 +219,34 @@ function mortgageInvestSimulation(monthlyBudget, payment, mortgageYears, ownerCo
   return portfolio;
 }
 
+const hashKeys = {
+  dp: "downPayment", ir: "interestRate", iv: "investReturn", nr: "newRent",
+  sp: "smallAptPrice", lp: "largeAptPrice", sy: "smallAptYears", ly: "largeAptYears",
+  h: "horizon", ap: "appreciation", mb: "monthlyBudget",
+  ri: "rentInflation", tc: "transactionCostPct", oc: "ownerCostPct",
+  mo: "moveOutYears", rn: "rentalIncome",
+};
+const hashKeysReverse = Object.fromEntries(Object.entries(hashKeys).map(([k, v]) => [v, k]));
+
+function parseHash() {
+  try {
+    const params = new URLSearchParams(window.location.hash.slice(1));
+    const result = {};
+    for (const [short, full] of Object.entries(hashKeys)) {
+      if (params.has(short)) result[full] = params.get(short);
+    }
+    return Object.keys(result).length > 0 ? result : null;
+  } catch { return null; }
+}
+
+function buildShareUrl(inputs) {
+  const params = new URLSearchParams();
+  for (const [full, short] of Object.entries(hashKeysReverse)) {
+    if (inputs[full]) params.set(short, inputs[full]);
+  }
+  return window.location.origin + window.location.pathname + "#" + params.toString();
+}
+
 export default function App() {
   const defaultInputs = {
     downPayment: "30000", interestRate: "5.5", investReturn: "7", newRent: "500",
@@ -228,6 +260,8 @@ export default function App() {
   const t = translations[lang];
 
   const [inputs, setInputs] = useState(() => {
+    const fromHash = parseHash();
+    if (fromHash) return { ...defaultInputs, ...fromHash };
     try {
       const saved = JSON.parse(localStorage.getItem("bvr-inputs"));
       return saved ? { ...defaultInputs, ...saved } : defaultInputs;
@@ -236,6 +270,14 @@ export default function App() {
 
   useEffect(() => { localStorage.setItem("bvr-inputs", JSON.stringify(inputs)); }, [inputs]);
   useEffect(() => { localStorage.setItem("bvr-lang", lang); }, [lang]);
+
+  const [copied, setCopied] = useState(false);
+  const copyLink = useCallback(() => {
+    navigator.clipboard.writeText(buildShareUrl(inputs)).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }, [inputs]);
 
   const set = useCallback((key) => (e) => {
     setInputs(prev => ({ ...prev, [key]: e.target.value }));
@@ -334,15 +376,21 @@ export default function App() {
     <div className="bg-gray-50 min-h-screen p-4 font-sans">
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-xl font-bold text-gray-800">{t.title}</h1>
-        <div className="flex gap-1 bg-gray-200 rounded-lg p-0.5">
+        <div className="flex items-center gap-3">
           <button
-            onClick={() => setLang("ro")}
-            className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${lang === "ro" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
-          >RO</button>
-          <button
-            onClick={() => setLang("en")}
-            className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${lang === "en" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
-          >EN</button>
+            onClick={copyLink}
+            className="px-3 py-1 rounded-md text-sm font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+          >{copied ? t.linkCopied : t.copyLink}</button>
+          <div className="flex gap-1 bg-gray-200 rounded-lg p-0.5">
+            <button
+              onClick={() => setLang("ro")}
+              className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${lang === "ro" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+            >RO</button>
+            <button
+              onClick={() => setLang("en")}
+              className={`px-3 py-1 rounded-md text-sm font-medium transition-colors ${lang === "en" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-700"}`}
+            >EN</button>
+          </div>
         </div>
       </div>
 
