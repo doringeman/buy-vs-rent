@@ -45,6 +45,7 @@ const translations = {
     totalRent: (y) => `Total chirie ${y} ani:`,
     rentalIncomeLabel: "Venit din chirie:",
     rentPaidLabel: "Chirie plătită:",
+    budgetWarning: (x) => `⚠️ Rata depășește bugetul cu ${x}€/lună`,
     property: "Proprietate:",
     afterYears: (y) => `(după ${y} ani)`,
     perMonth: "/lună",
@@ -98,6 +99,7 @@ const translations = {
     totalRent: (y) => `Total rent ${y} yrs:`,
     rentalIncomeLabel: "Rental income:",
     rentPaidLabel: "Rent paid:",
+    budgetWarning: (x) => `⚠️ Exceeds budget by ${x}€/mo`,
     property: "Property:",
     afterYears: (y) => `(after ${y} yrs)`,
     perMonth: "/mo",
@@ -259,6 +261,11 @@ export default function App() {
   const portfolioV4 = rentInvestSimulation(downPayment, monthlyBudget, newRent, rentInflation, investReturn, horizon);
   const extraMonthlyV4 = Math.max(0, monthlyBudget - newRent);
 
+  const shortfallV1 = mSmall.payment + ownerCostMonthlySmall - monthlyBudget;
+  const shortfallV2 = mSmall.payment + ownerCostMonthlySmall - monthlyBudget;
+  const shortfallV3 = mLarge.payment + ownerCostMonthlyLarge - monthlyBudget;
+  const shortfallV4 = newRent - monthlyBudget;
+
   const nw1 = aptValueSmall - balanceSmall + portfolioV1;
   const nw2 = aptValueSmall - balanceSmall + portfolioV2;
   const nw3 = aptValueLarge - balanceLarge + portfolioV3;
@@ -266,6 +273,9 @@ export default function App() {
 
   const best = Math.max(nw1, nw2, nw3, nw4);
   const highlight = (nw) => nw === best ? "ring-2 ring-yellow-400" : "";
+  const Warning = ({ shortfall }) => shortfall > 0 ? (
+    <div className="bg-red-50 border border-red-300 text-red-700 text-xs font-semibold rounded p-2 mb-3">{t.budgetWarning(fmt(shortfall))}</div>
+  ) : null;
 
   const ic = "w-full p-2 border border-gray-300 rounded text-sm";
   const lc = "text-xs text-gray-500 mb-1";
@@ -330,6 +340,7 @@ export default function App() {
         <div className={`bg-white rounded-lg shadow p-4 border-t-4 border-blue-500 ${highlight(nw1)}`}>
           <h3 className="font-bold text-blue-700 mb-2">{t.v1Title(fmt(smallAptPrice))}</h3>
           <div className="text-xs text-gray-500 mb-3">{t.v1Desc(fmt(downPayment), fmt(txCostSmall), fmt(mortgageSmall))}</div>
+          <Warning shortfall={shortfallV1} />
           <div className="space-y-2 text-sm">
             <div className="flex justify-between"><span>{t.monthlyPayment}</span><span className="font-semibold">{fmt(mSmall.payment)}€</span></div>
             <div className="flex justify-between"><span>{t.ownerCostsMonthly}</span><span className="font-semibold text-red-500">{fmt(ownerCostMonthlySmall)}€</span></div>
@@ -347,6 +358,7 @@ export default function App() {
         <div className={`bg-white rounded-lg shadow p-4 border-t-4 border-purple-500 ${highlight(nw2)}`}>
           <h3 className="font-bold text-purple-700 mb-2">{t.v2Title(fmt(smallAptPrice))}</h3>
           <div className="text-xs text-gray-500 mb-3">{t.v2Desc(fmt(downPayment), fmt(txCostSmall), fmt(mortgageSmall), moveOutYears, fmt(rentalIncome))}</div>
+          <Warning shortfall={shortfallV2} />
           <div className="space-y-2 text-sm">
             <div className="flex justify-between"><span>{t.monthlyPayment}</span><span className="font-semibold">{fmt(mSmall.payment)}€</span></div>
             <div className="flex justify-between"><span>{t.ownerCostsMonthly}</span><span className="font-semibold text-red-500">{fmt(ownerCostMonthlySmall)}€</span></div>
@@ -366,6 +378,7 @@ export default function App() {
         <div className={`bg-white rounded-lg shadow p-4 border-t-4 border-green-500 ${highlight(nw3)}`}>
           <h3 className="font-bold text-green-700 mb-2">{t.v3Title(fmt(largeAptPrice))}</h3>
           <div className="text-xs text-gray-500 mb-3">{t.v3Desc(fmt(downPayment), fmt(txCostLarge), fmt(mortgageLarge))}</div>
+          <Warning shortfall={shortfallV3} />
           <div className="space-y-2 text-sm">
             <div className="flex justify-between"><span>{t.monthlyPayment}</span><span className="font-semibold">{fmt(mLarge.payment)}€</span></div>
             <div className="flex justify-between"><span>{t.ownerCostsMonthly}</span><span className="font-semibold text-red-500">{fmt(ownerCostMonthlyLarge)}€</span></div>
@@ -383,6 +396,7 @@ export default function App() {
         <div className={`bg-white rounded-lg shadow p-4 border-t-4 border-orange-500 ${highlight(nw4)}`}>
           <h3 className="font-bold text-orange-700 mb-2">{t.v4Title}</h3>
           <div className="text-xs text-gray-500 mb-3">{t.v4Desc(fmt(downPayment), fmt(extraMonthlyV4))}</div>
+          <Warning shortfall={shortfallV4} />
           <div className="space-y-2 text-sm">
             <div className="flex justify-between"><span>{t.initialRent}</span><span className="font-semibold">{fmt(newRent)}€{t.perMonth}</span></div>
             <div className="flex justify-between"><span>{t.rentInYear(horizon)}</span><span className="font-semibold text-red-500">{fmt(newRent * Math.pow(1 + rentInflation / 100, Math.max(0, horizon - 1)))}€{t.perMonth}</span></div>
