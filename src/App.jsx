@@ -54,6 +54,7 @@ const translations = {
     note3: (v) => `✅ Costuri proprietar (${v}%/an) – reparații, impozit, fond rulment – scad investiția lunară`,
     note4: "✅ Investiții lunare din diferența buget - rată/chirie - costuri",
     note5: "⚠️ Nu include: inflația ratei (dacă dobândă variabilă), impozit pe câștig capital, inflația costurilor proprietar",
+    summary: "COMPARAȚIE AVERE NETĂ",
     showFormulas: "▶ Arată formulele",
     hideFormulas: "▼ Ascunde formulele",
     fCredit: "Credit = Preț + Tranzacție - Avans",
@@ -124,6 +125,7 @@ const translations = {
     note3: (v) => `✅ Owner costs (${v}%/yr) – repairs, tax, maintenance – reduce monthly investment`,
     note4: "✅ Monthly investments from budget minus payment/rent minus costs",
     note5: "⚠️ Not included: variable rate changes, capital gains tax, owner cost inflation",
+    summary: "NET WORTH COMPARISON",
     showFormulas: "▶ Show formulas",
     hideFormulas: "▼ Hide formulas",
     fCredit: "Mortgage = Price + Transaction - Down payment",
@@ -383,6 +385,39 @@ export default function App() {
           </div>
         </div>
       </div>
+
+      {best > 0 && (() => {
+        const bars = [
+          { label: t.v1Title(fmt(smallAptPrice)), color: "bg-blue-500", nw: nw1 },
+          { label: t.v2Title(fmt(smallAptPrice)), color: "bg-purple-500", nw: nw2 },
+          { label: t.v3Title(fmt(largeAptPrice)), color: "bg-green-500", nw: nw3 },
+          { label: t.v4Title, color: "bg-orange-500", nw: nw4 },
+        ].sort((a, b) => b.nw - a.nw);
+        return (
+          <div className="bg-white rounded-lg shadow p-4 mb-4">
+            <h2 className="font-semibold text-sm text-gray-600 mb-3">{t.summary}</h2>
+            <div className="space-y-2">
+              {bars.map((b, i) => {
+                const below = bars[i + 1];
+                const pct = below && below.nw > 0 ? Math.round((b.nw - below.nw) / below.nw * 100) : 0;
+                return (
+                  <div key={b.label} className="flex items-center gap-3">
+                    <span className={`text-xs font-semibold shrink-0 w-80 ${i === 0 ? "text-gray-900" : "text-gray-500"}`}>{b.label}</span>
+                    <div className="flex-1 bg-gray-100 rounded-full h-6 relative">
+                      <div
+                        className={`${b.color} h-6 rounded-full transition-all duration-500 ${i === 0 ? "opacity-100" : "opacity-60"}`}
+                        style={{ width: `${Math.max(0, (b.nw / best) * 100)}%` }}
+                      />
+                    </div>
+                    <span className={`text-sm font-semibold w-24 text-right ${i === 0 ? "text-gray-900" : "text-gray-500"}`}>{fmt(b.nw)}€</span>
+                    <span className="text-xs text-green-600 font-semibold w-14">{pct > 0 ? `+${pct}%` : ""}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })()}
 
       <div className="grid md:grid-cols-2 gap-4 mb-4">
         <div className={`bg-white rounded-lg shadow p-4 border-t-4 border-blue-500 ${highlight(nw1)}`}>
