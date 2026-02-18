@@ -21,12 +21,16 @@ const translations = {
     largeAptPrice: "Preț apt. mare (€)",
     largeAptYears: "Ani credit apt. mare",
     newRent: "Chirie nouă (€/lună, azi)",
+    moveOutYears: "Ani până dau în chirie apt. mic",
+    rentalIncome: "Chirie primită apt. mic (€/lună)",
     v1Title: (p) => `V1: Apt. mic (${p}€)`,
-    v2Title: (p) => `V2: Apt. mare (${p}€)`,
-    v3Title: "V3: Chirie + Investiții",
+    v2Title: (p) => `V2: Cumpăr mic (${p}€), dau în chirie`,
+    v3Title: (p) => `V3: Apt. mare (${p}€)`,
+    v4Title: "V4: Chirie + Investiții",
     v1Desc: (d, t, c) => `Avans ${d}€ + tranzacție ${t}€ + credit ${c}€`,
-    v2Desc: (d, t, c) => `Avans ${d}€ + tranzacție ${t}€ + credit ${c}€`,
-    v3Desc: (a, e) => `Investești ${a}€ inițial + ${e}€/lună (scade cu inflația chiriei)`,
+    v2Desc: (d, t, c, y, r) => `Avans ${d}€ + tranzacție ${t}€ + credit ${c}€ · după ${y} ani: dau în chirie (${r}€) și mă mut`,
+    v3Desc: (d, t, c) => `Avans ${d}€ + tranzacție ${t}€ + credit ${c}€`,
+    v4Desc: (a, e) => `Investești ${a}€ inițial + ${e}€/lună (scade cu inflația chiriei)`,
     monthlyPayment: "Rată lunară:",
     ownerCostsMonthly: "Costuri proprietar/lună:",
     monthlyInvestment: "Investești lunar:",
@@ -39,12 +43,14 @@ const translations = {
     initialRent: "Chirie inițială:",
     rentInYear: (y) => `Chirie în anul ${y}:`,
     totalRent: (y) => `Total chirie ${y} ani:`,
+    rentalIncomeLabel: "Venit din chirie:",
+    rentPaidLabel: "Chirie plătită:",
     property: "Proprietate:",
     afterYears: (y) => `(după ${y} ani)`,
     perMonth: "/lună",
-    note1: (v) => `✅ Inflația chiriei (${v}%/an) – chiria crește anual, scade suma investită lunar în V3`,
-    note2: (v) => `✅ Costuri tranzacție (${v}%) – se scad din avans la V1 & V2, cresc creditul necesar`,
-    note3: (v) => `✅ Costuri proprietar (${v}%/an) – reparații, impozit, fond rulment – scad investiția lunară la V1 & V2`,
+    note1: (v) => `✅ Inflația chiriei (${v}%/an) – chiria crește anual, scade suma investită lunar în V4`,
+    note2: (v) => `✅ Costuri tranzacție (${v}%) – cresc creditul necesar`,
+    note3: (v) => `✅ Costuri proprietar (${v}%/an) – reparații, impozit, fond rulment – scad investiția lunară`,
     note4: "✅ Investiții lunare din diferența buget - rată/chirie - costuri",
     note5: "⚠️ Nu include: inflația ratei (dacă dobândă variabilă), impozit pe câștig capital, inflația costurilor proprietar",
   },
@@ -68,12 +74,16 @@ const translations = {
     largeAptPrice: "Large apt. price (€)",
     largeAptYears: "Mortgage years (large apt.)",
     newRent: "New rent (€/month, today)",
+    moveOutYears: "Years before renting out small apt",
+    rentalIncome: "Rental income small apt (€/mo)",
     v1Title: (p) => `V1: Small apt. (${p}€)`,
-    v2Title: (p) => `V2: Large apt. (${p}€)`,
-    v3Title: "V3: Rent + Invest",
+    v2Title: (p) => `V2: Buy small (${p}€), rent out`,
+    v3Title: (p) => `V3: Large apt. (${p}€)`,
+    v4Title: "V4: Rent + Invest",
     v1Desc: (d, t, c) => `Down payment ${d}€ + transaction ${t}€ + mortgage ${c}€`,
-    v2Desc: (d, t, c) => `Down payment ${d}€ + transaction ${t}€ + mortgage ${c}€`,
-    v3Desc: (a, e) => `Invest ${a}€ upfront + ${e}€/month (decreases with rent inflation)`,
+    v2Desc: (d, t, c, y, r) => `Down payment ${d}€ + transaction ${t}€ + mortgage ${c}€ · after ${y} yrs: rent out (${r}€) and move`,
+    v3Desc: (d, t, c) => `Down payment ${d}€ + transaction ${t}€ + mortgage ${c}€`,
+    v4Desc: (a, e) => `Invest ${a}€ upfront + ${e}€/month (decreases with rent inflation)`,
     monthlyPayment: "Monthly payment:",
     ownerCostsMonthly: "Owner costs/month:",
     monthlyInvestment: "Monthly investment:",
@@ -86,12 +96,14 @@ const translations = {
     initialRent: "Initial rent:",
     rentInYear: (y) => `Rent in year ${y}:`,
     totalRent: (y) => `Total rent ${y} yrs:`,
+    rentalIncomeLabel: "Rental income:",
+    rentPaidLabel: "Rent paid:",
     property: "Property:",
     afterYears: (y) => `(after ${y} yrs)`,
     perMonth: "/mo",
-    note1: (v) => `✅ Rent inflation (${v}%/yr) – rent increases annually, reduces monthly investment in V3`,
-    note2: (v) => `✅ Transaction costs (${v}%) – deducted from down payment in V1 & V2, increases mortgage`,
-    note3: (v) => `✅ Owner costs (${v}%/yr) – repairs, tax, maintenance – reduce monthly investment in V1 & V2`,
+    note1: (v) => `✅ Rent inflation (${v}%/yr) – rent increases annually, reduces monthly investment in V4`,
+    note2: (v) => `✅ Transaction costs (${v}%) – increases mortgage`,
+    note3: (v) => `✅ Owner costs (${v}%/yr) – repairs, tax, maintenance – reduce monthly investment`,
     note4: "✅ Monthly investments from budget minus payment/rent minus costs",
     note5: "⚠️ Not included: variable rate changes, capital gains tax, owner cost inflation",
   },
@@ -139,6 +151,24 @@ function rentInvestSimulation(downPayment, monthlyBudget, monthlyRent, rentInfla
   return portfolio;
 }
 
+function buyRentOutSimulation(monthlyBudget, payment, mortgageYears, ownerCostMonthly, rentalIncome, moveOutYears, monthlyRent, rentInflation, investReturn, horizon) {
+  const r = investReturn / 100 / 12;
+  let portfolio = 0;
+  for (let m = 0; m < horizon * 12; m++) {
+    const year = Math.floor(m / 12);
+    const currentPayment = year < mortgageYears ? payment : 0;
+    const movedOut = year >= moveOutYears;
+    let monthlyNet = monthlyBudget - currentPayment - ownerCostMonthly;
+    if (movedOut) {
+      const currentRentalIncome = rentalIncome * Math.pow(1 + rentInflation / 100, year);
+      const currentRent = monthlyRent * Math.pow(1 + rentInflation / 100, year);
+      monthlyNet += currentRentalIncome - currentRent;
+    }
+    portfolio = portfolio * (1 + r) + Math.max(0, monthlyNet);
+  }
+  return portfolio;
+}
+
 function mortgageInvestSimulation(monthlyBudget, payment, mortgageYears, ownerCostMonthly, investReturn, horizon) {
   const r = investReturn / 100 / 12;
   let portfolio = 0;
@@ -155,6 +185,7 @@ export default function App() {
     smallAptPrice: "", largeAptPrice: "", smallAptYears: "", largeAptYears: "",
     horizon: "", appreciation: "", monthlyBudget: "",
     rentInflation: "", transactionCostPct: "", ownerCostPct: "",
+    moveOutYears: "", rentalIncome: "",
   };
 
   const [lang, setLang] = useState(() => localStorage.getItem("bvr-lang") || "ro");
@@ -182,53 +213,58 @@ export default function App() {
   const appreciation = v("appreciation"), monthlyBudget = v("monthlyBudget");
   const rentInflation = v("rentInflation"), transactionCostPct = v("transactionCostPct");
   const ownerCostPct = v("ownerCostPct");
+  const moveOutYears = v("moveOutYears"), rentalIncome = v("rentalIncome");
 
-  const txCost1 = smallAptPrice * transactionCostPct / 100;
-  const txCost2 = largeAptPrice * transactionCostPct / 100;
-  const mortgage1 = smallAptPrice + txCost1 - downPayment;
-  const mortgage2 = largeAptPrice + txCost2 - downPayment;
+  // V1 & V2: small apt
+  const txCostSmall = smallAptPrice * transactionCostPct / 100;
+  const mortgageSmall = smallAptPrice + txCostSmall - downPayment;
+  const mSmall = calcMortgage(mortgageSmall, interestRate, smallAptYears);
+  const balanceSmall = remainingBalance(mortgageSmall, interestRate, smallAptYears, horizon);
+  const monthsPaidSmall = Math.min(horizon, smallAptYears) * 12;
+  const interestPaidSmall = mSmall.payment * monthsPaidSmall - (mortgageSmall - balanceSmall);
+  const aptValueSmall = compoundGrowth(smallAptPrice, appreciation, horizon);
+  const ownerCostMonthlySmall = (smallAptPrice * ownerCostPct / 100) / 12;
+  let totalOwnerCostSmall = 0;
+  for (let y = 0; y < horizon; y++) totalOwnerCostSmall += compoundGrowth(smallAptPrice, appreciation, y) * ownerCostPct / 100;
 
-  const m1 = calcMortgage(mortgage1, interestRate, smallAptYears);
-  const m2 = calcMortgage(mortgage2, interestRate, largeAptYears);
+  // V3: large apt
+  const txCostLarge = largeAptPrice * transactionCostPct / 100;
+  const mortgageLarge = largeAptPrice + txCostLarge - downPayment;
+  const mLarge = calcMortgage(mortgageLarge, interestRate, largeAptYears);
+  const balanceLarge = remainingBalance(mortgageLarge, interestRate, largeAptYears, horizon);
+  const monthsPaidLarge = Math.min(horizon, largeAptYears) * 12;
+  const interestPaidLarge = mLarge.payment * monthsPaidLarge - (mortgageLarge - balanceLarge);
+  const aptValueLarge = compoundGrowth(largeAptPrice, appreciation, horizon);
+  const ownerCostMonthlyLarge = (largeAptPrice * ownerCostPct / 100) / 12;
+  let totalOwnerCostLarge = 0;
+  for (let y = 0; y < horizon; y++) totalOwnerCostLarge += compoundGrowth(largeAptPrice, appreciation, y) * ownerCostPct / 100;
 
-  const balance1 = remainingBalance(mortgage1, interestRate, smallAptYears, horizon);
-  const balance2 = remainingBalance(mortgage2, interestRate, largeAptYears, horizon);
+  // V1: buy small, live in it
+  const portfolioV1 = mortgageInvestSimulation(monthlyBudget, mSmall.payment, smallAptYears, ownerCostMonthlySmall, investReturn, horizon);
+  const extraMonthlyV1 = Math.max(0, monthlyBudget - mSmall.payment - ownerCostMonthlySmall);
+  const extraAfterV1 = monthlyBudget - ownerCostMonthlySmall;
+  const yearsAfterMortgageV1 = Math.max(0, horizon - smallAptYears);
 
-  const monthsPaid1 = Math.min(horizon, smallAptYears) * 12;
-  const monthsPaid2 = Math.min(horizon, largeAptYears) * 12;
-  const interestPaid1 = m1.payment * monthsPaid1 - (mortgage1 - balance1);
-  const interestPaid2 = m2.payment * monthsPaid2 - (mortgage2 - balance2);
+  // V2: buy small, rent it out after moveOutYears, move to rented place
+  const portfolioV2 = buyRentOutSimulation(monthlyBudget, mSmall.payment, smallAptYears, ownerCostMonthlySmall, rentalIncome, moveOutYears, newRent, rentInflation, investReturn, horizon);
+  const totalRentV2 = totalRentWithInflation(newRent, rentInflation, Math.max(0, horizon - moveOutYears));
 
-  const aptValue1 = compoundGrowth(smallAptPrice, appreciation, horizon);
-  const aptValue2 = compoundGrowth(largeAptPrice, appreciation, horizon);
+  // V3: buy large, live in it
+  const portfolioV3 = mortgageInvestSimulation(monthlyBudget, mLarge.payment, largeAptYears, ownerCostMonthlyLarge, investReturn, horizon);
+  const extraMonthlyV3 = Math.max(0, monthlyBudget - mLarge.payment - ownerCostMonthlyLarge);
+  const yearsAfterMortgageV3 = Math.max(0, horizon - largeAptYears);
 
-  const ownerCostMonthly1 = (smallAptPrice * ownerCostPct / 100) / 12;
-  const ownerCostMonthly2 = (largeAptPrice * ownerCostPct / 100) / 12;
+  // V4: rent + invest
+  const totalRentV4 = totalRentWithInflation(newRent, rentInflation, horizon);
+  const portfolioV4 = rentInvestSimulation(downPayment, monthlyBudget, newRent, rentInflation, investReturn, horizon);
+  const extraMonthlyV4 = Math.max(0, monthlyBudget - newRent);
 
-  let totalOwnerCost1 = 0, totalOwnerCost2 = 0;
-  for (let y = 0; y < horizon; y++) {
-    totalOwnerCost1 += compoundGrowth(smallAptPrice, appreciation, y) * ownerCostPct / 100;
-    totalOwnerCost2 += compoundGrowth(largeAptPrice, appreciation, y) * ownerCostPct / 100;
-  }
+  const nw1 = aptValueSmall - balanceSmall + portfolioV1;
+  const nw2 = aptValueSmall - balanceSmall + portfolioV2;
+  const nw3 = aptValueLarge - balanceLarge + portfolioV3;
+  const nw4 = portfolioV4;
 
-  const portfolio1 = mortgageInvestSimulation(monthlyBudget, m1.payment, smallAptYears, ownerCostMonthly1, investReturn, horizon);
-  const portfolio2 = mortgageInvestSimulation(monthlyBudget, m2.payment, largeAptYears, ownerCostMonthly2, investReturn, horizon);
-
-  const totalRent = totalRentWithInflation(newRent, rentInflation, horizon);
-  const portfolio3 = rentInvestSimulation(downPayment, monthlyBudget, newRent, rentInflation, investReturn, horizon);
-
-  const extraMonthly1 = Math.max(0, monthlyBudget - m1.payment - ownerCostMonthly1);
-  const extraMonthly2 = Math.max(0, monthlyBudget - m2.payment - ownerCostMonthly2);
-  const extraAfter1 = monthlyBudget - ownerCostMonthly1;
-  const extraMonthly3 = Math.max(0, monthlyBudget - newRent);
-  const yearsAfterMortgage1 = Math.max(0, horizon - smallAptYears);
-  const yearsAfterMortgage2 = Math.max(0, horizon - largeAptYears);
-
-  const nw1 = aptValue1 - balance1 + portfolio1;
-  const nw2 = aptValue2 - balance2 + portfolio2;
-  const nw3 = portfolio3; // rent already accounted for in reduced monthly investment
-
-  const best = Math.max(nw1, nw2, nw3);
+  const best = Math.max(nw1, nw2, nw3, nw4);
   const highlight = (nw) => nw === best ? "ring-2 ring-yellow-400" : "";
 
   const ic = "w-full p-2 border border-gray-300 rounded text-sm";
@@ -274,9 +310,11 @@ export default function App() {
       <div className="bg-white rounded-lg shadow p-4 mb-4">
         <h2 className="font-semibold text-sm text-gray-600 mb-3">{t.aptAndRent}</h2>
         <div className="space-y-3">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div><div className={lc}>{t.smallAptPrice}</div><input type="number" className={ic} value={inputs.smallAptPrice} onChange={set("smallAptPrice")} /></div>
             <div><div className={lc}>{t.smallAptYears}</div><input type="number" className={ic} value={inputs.smallAptYears} onChange={set("smallAptYears")} /></div>
+            <div><div className={lc}>{t.moveOutYears}</div><input type="number" className={ic} value={inputs.moveOutYears} onChange={set("moveOutYears")} /></div>
+            <div><div className={lc}>{t.rentalIncome}</div><input type="number" className={ic} value={inputs.rentalIncome} onChange={set("rentalIncome")} /></div>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div><div className={lc}>{t.largeAptPrice}</div><input type="number" className={ic} value={inputs.largeAptPrice} onChange={set("largeAptPrice")} /></div>
@@ -288,52 +326,71 @@ export default function App() {
         </div>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-4 mb-4">
+      <div className="grid md:grid-cols-2 gap-4 mb-4">
         <div className={`bg-white rounded-lg shadow p-4 border-t-4 border-blue-500 ${highlight(nw1)}`}>
           <h3 className="font-bold text-blue-700 mb-2">{t.v1Title(fmt(smallAptPrice))}</h3>
-          <div className="text-xs text-gray-500 mb-3">{t.v1Desc(fmt(downPayment), fmt(txCost1), fmt(mortgage1))}</div>
+          <div className="text-xs text-gray-500 mb-3">{t.v1Desc(fmt(downPayment), fmt(txCostSmall), fmt(mortgageSmall))}</div>
           <div className="space-y-2 text-sm">
-            <div className="flex justify-between"><span>{t.monthlyPayment}</span><span className="font-semibold">{fmt(m1.payment)}€</span></div>
-            <div className="flex justify-between"><span>{t.ownerCostsMonthly}</span><span className="font-semibold text-red-500">{fmt(ownerCostMonthly1)}€</span></div>
-            <div className="flex justify-between"><span>{t.monthlyInvestment}</span><span className="font-semibold text-green-600">{fmt(extraMonthly1)}€{yearsAfterMortgage1 > 0 ? ` → ${fmt(extraAfter1)}€ ${t.afterYears(smallAptYears)}` : ""}</span></div>
-            <div className="flex justify-between"><span>{t.interestPaid}</span><span className="font-semibold text-red-600">{fmt(interestPaid1)}€</span></div>
-            <div className="flex justify-between"><span>{t.totalOwnerCosts}</span><span className="font-semibold text-red-600">{fmt(totalOwnerCost1)}€</span></div>
-            <div className="flex justify-between"><span>{t.remainingBalance}</span><span className="font-semibold">{balance1 > 0 ? fmt(balance1) + "€" : "0€ ✓"}</span></div>
-            <div className="flex justify-between"><span>{t.aptValueIn(horizon)}</span><span className="font-semibold text-green-600">{fmt(aptValue1)}€</span></div>
-            <div className="flex justify-between"><span>{t.investmentPortfolio}</span><span className="font-semibold text-green-600">{fmt(portfolio1)}€</span></div>
+            <div className="flex justify-between"><span>{t.monthlyPayment}</span><span className="font-semibold">{fmt(mSmall.payment)}€</span></div>
+            <div className="flex justify-between"><span>{t.ownerCostsMonthly}</span><span className="font-semibold text-red-500">{fmt(ownerCostMonthlySmall)}€</span></div>
+            <div className="flex justify-between"><span>{t.monthlyInvestment}</span><span className="font-semibold text-green-600">{fmt(extraMonthlyV1)}€{yearsAfterMortgageV1 > 0 ? ` → ${fmt(extraAfterV1)}€ ${t.afterYears(smallAptYears)}` : ""}</span></div>
+            <div className="flex justify-between"><span>{t.interestPaid}</span><span className="font-semibold text-red-600">{fmt(interestPaidSmall)}€</span></div>
+            <div className="flex justify-between"><span>{t.totalOwnerCosts}</span><span className="font-semibold text-red-600">{fmt(totalOwnerCostSmall)}€</span></div>
+            <div className="flex justify-between"><span>{t.remainingBalance}</span><span className="font-semibold">{balanceSmall > 0 ? fmt(balanceSmall) + "€" : "0€ ✓"}</span></div>
+            <div className="flex justify-between"><span>{t.aptValueIn(horizon)}</span><span className="font-semibold text-green-600">{fmt(aptValueSmall)}€</span></div>
+            <div className="flex justify-between"><span>{t.investmentPortfolio}</span><span className="font-semibold text-green-600">{fmt(portfolioV1)}€</span></div>
             <hr />
             <div className="flex justify-between font-bold text-base"><span>{t.netWorth}</span><span className="text-blue-700">{fmt(nw1)}€</span></div>
           </div>
         </div>
 
-        <div className={`bg-white rounded-lg shadow p-4 border-t-4 border-green-500 ${highlight(nw2)}`}>
-          <h3 className="font-bold text-green-700 mb-2">{t.v2Title(fmt(largeAptPrice))}</h3>
-          <div className="text-xs text-gray-500 mb-3">{t.v2Desc(fmt(downPayment), fmt(txCost2), fmt(mortgage2))}</div>
+        <div className={`bg-white rounded-lg shadow p-4 border-t-4 border-purple-500 ${highlight(nw2)}`}>
+          <h3 className="font-bold text-purple-700 mb-2">{t.v2Title(fmt(smallAptPrice))}</h3>
+          <div className="text-xs text-gray-500 mb-3">{t.v2Desc(fmt(downPayment), fmt(txCostSmall), fmt(mortgageSmall), moveOutYears, fmt(rentalIncome))}</div>
           <div className="space-y-2 text-sm">
-            <div className="flex justify-between"><span>{t.monthlyPayment}</span><span className="font-semibold">{fmt(m2.payment)}€</span></div>
-            <div className="flex justify-between"><span>{t.ownerCostsMonthly}</span><span className="font-semibold text-red-500">{fmt(ownerCostMonthly2)}€</span></div>
-            <div className="flex justify-between"><span>{t.monthlyInvestment}</span><span className="font-semibold text-green-600">{fmt(extraMonthly2)}€{yearsAfterMortgage2 > 0 ? ` → ${fmt(monthlyBudget - ownerCostMonthly2)}€ ${t.afterYears(largeAptYears)}` : ""}</span></div>
-            <div className="flex justify-between"><span>{t.interestPaid}</span><span className="font-semibold text-red-600">{fmt(interestPaid2)}€</span></div>
-            <div className="flex justify-between"><span>{t.totalOwnerCosts}</span><span className="font-semibold text-red-600">{fmt(totalOwnerCost2)}€</span></div>
-            <div className="flex justify-between"><span>{t.remainingBalance}</span><span className="font-semibold">{balance2 > 0 ? fmt(balance2) + "€" : "0€ ✓"}</span></div>
-            <div className="flex justify-between"><span>{t.aptValueIn(horizon)}</span><span className="font-semibold text-green-600">{fmt(aptValue2)}€</span></div>
-            <div className="flex justify-between"><span>{t.investmentPortfolio}</span><span className="font-semibold text-green-600">{fmt(portfolio2)}€</span></div>
+            <div className="flex justify-between"><span>{t.monthlyPayment}</span><span className="font-semibold">{fmt(mSmall.payment)}€</span></div>
+            <div className="flex justify-between"><span>{t.ownerCostsMonthly}</span><span className="font-semibold text-red-500">{fmt(ownerCostMonthlySmall)}€</span></div>
+            <div className="flex justify-between"><span>{t.rentalIncomeLabel}</span><span className="font-semibold text-green-600">{fmt(rentalIncome)}€{t.perMonth} {t.afterYears(moveOutYears)}</span></div>
+            <div className="flex justify-between"><span>{t.rentPaidLabel}</span><span className="font-semibold text-red-500">{fmt(newRent)}€{t.perMonth} {t.afterYears(moveOutYears)}</span></div>
+            <div className="flex justify-between"><span>{t.interestPaid}</span><span className="font-semibold text-red-600">{fmt(interestPaidSmall)}€</span></div>
+            <div className="flex justify-between"><span>{t.totalOwnerCosts}</span><span className="font-semibold text-red-600">{fmt(totalOwnerCostSmall)}€</span></div>
+            <div className="flex justify-between"><span>{t.totalRent(Math.max(0, horizon - moveOutYears))}</span><span className="font-semibold text-red-600">{fmt(totalRentV2)}€</span></div>
+            <div className="flex justify-between"><span>{t.remainingBalance}</span><span className="font-semibold">{balanceSmall > 0 ? fmt(balanceSmall) + "€" : "0€ ✓"}</span></div>
+            <div className="flex justify-between"><span>{t.aptValueIn(horizon)}</span><span className="font-semibold text-green-600">{fmt(aptValueSmall)}€</span></div>
+            <div className="flex justify-between"><span>{t.investmentPortfolio}</span><span className="font-semibold text-green-600">{fmt(portfolioV2)}€</span></div>
             <hr />
-            <div className="flex justify-between font-bold text-base"><span>{t.netWorth}</span><span className="text-green-700">{fmt(nw2)}€</span></div>
+            <div className="flex justify-between font-bold text-base"><span>{t.netWorth}</span><span className="text-purple-700">{fmt(nw2)}€</span></div>
           </div>
         </div>
 
-        <div className={`bg-white rounded-lg shadow p-4 border-t-4 border-orange-500 ${highlight(nw3)}`}>
-          <h3 className="font-bold text-orange-700 mb-2">{t.v3Title}</h3>
-          <div className="text-xs text-gray-500 mb-3">{t.v3Desc(fmt(downPayment), fmt(extraMonthly3))}</div>
+        <div className={`bg-white rounded-lg shadow p-4 border-t-4 border-green-500 ${highlight(nw3)}`}>
+          <h3 className="font-bold text-green-700 mb-2">{t.v3Title(fmt(largeAptPrice))}</h3>
+          <div className="text-xs text-gray-500 mb-3">{t.v3Desc(fmt(downPayment), fmt(txCostLarge), fmt(mortgageLarge))}</div>
+          <div className="space-y-2 text-sm">
+            <div className="flex justify-between"><span>{t.monthlyPayment}</span><span className="font-semibold">{fmt(mLarge.payment)}€</span></div>
+            <div className="flex justify-between"><span>{t.ownerCostsMonthly}</span><span className="font-semibold text-red-500">{fmt(ownerCostMonthlyLarge)}€</span></div>
+            <div className="flex justify-between"><span>{t.monthlyInvestment}</span><span className="font-semibold text-green-600">{fmt(extraMonthlyV3)}€{yearsAfterMortgageV3 > 0 ? ` → ${fmt(monthlyBudget - ownerCostMonthlyLarge)}€ ${t.afterYears(largeAptYears)}` : ""}</span></div>
+            <div className="flex justify-between"><span>{t.interestPaid}</span><span className="font-semibold text-red-600">{fmt(interestPaidLarge)}€</span></div>
+            <div className="flex justify-between"><span>{t.totalOwnerCosts}</span><span className="font-semibold text-red-600">{fmt(totalOwnerCostLarge)}€</span></div>
+            <div className="flex justify-between"><span>{t.remainingBalance}</span><span className="font-semibold">{balanceLarge > 0 ? fmt(balanceLarge) + "€" : "0€ ✓"}</span></div>
+            <div className="flex justify-between"><span>{t.aptValueIn(horizon)}</span><span className="font-semibold text-green-600">{fmt(aptValueLarge)}€</span></div>
+            <div className="flex justify-between"><span>{t.investmentPortfolio}</span><span className="font-semibold text-green-600">{fmt(portfolioV3)}€</span></div>
+            <hr />
+            <div className="flex justify-between font-bold text-base"><span>{t.netWorth}</span><span className="text-green-700">{fmt(nw3)}€</span></div>
+          </div>
+        </div>
+
+        <div className={`bg-white rounded-lg shadow p-4 border-t-4 border-orange-500 ${highlight(nw4)}`}>
+          <h3 className="font-bold text-orange-700 mb-2">{t.v4Title}</h3>
+          <div className="text-xs text-gray-500 mb-3">{t.v4Desc(fmt(downPayment), fmt(extraMonthlyV4))}</div>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between"><span>{t.initialRent}</span><span className="font-semibold">{fmt(newRent)}€{t.perMonth}</span></div>
             <div className="flex justify-between"><span>{t.rentInYear(horizon)}</span><span className="font-semibold text-red-500">{fmt(newRent * Math.pow(1 + rentInflation / 100, Math.max(0, horizon - 1)))}€{t.perMonth}</span></div>
-            <div className="flex justify-between"><span>{t.totalRent(horizon)}</span><span className="font-semibold text-red-600">{fmt(totalRent)}€</span></div>
-            <div className="flex justify-between"><span>{t.investmentPortfolio}</span><span className="font-semibold text-green-600">{fmt(portfolio3)}€</span></div>
+            <div className="flex justify-between"><span>{t.totalRent(horizon)}</span><span className="font-semibold text-red-600">{fmt(totalRentV4)}€</span></div>
+            <div className="flex justify-between"><span>{t.investmentPortfolio}</span><span className="font-semibold text-green-600">{fmt(portfolioV4)}€</span></div>
             <div className="flex justify-between"><span>{t.property}</span><span className="font-semibold text-gray-400">0€</span></div>
             <hr />
-            <div className="flex justify-between font-bold text-base"><span>{t.netWorth}</span><span className="text-orange-700">{fmt(nw3)}€</span></div>
+            <div className="flex justify-between font-bold text-base"><span>{t.netWorth}</span><span className="text-orange-700">{fmt(nw4)}€</span></div>
           </div>
         </div>
       </div>
