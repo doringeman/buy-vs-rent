@@ -54,6 +54,22 @@ const translations = {
     note3: (v) => `✅ Costuri proprietar (${v}%/an) – reparații, impozit, fond rulment – scad investiția lunară`,
     note4: "✅ Investiții lunare din diferența buget - rată/chirie - costuri",
     note5: "⚠️ Nu include: inflația ratei (dacă dobândă variabilă), impozit pe câștig capital, inflația costurilor proprietar",
+    showFormulas: "▶ Arată formulele",
+    hideFormulas: "▼ Ascunde formulele",
+    fCredit: "Credit = Preț + Tranzacție - Avans",
+    fMonthlyPayment: "Rată = Credit × r(1+r)^n / ((1+r)^n - 1)  (anuitate constantă; r = dobândă lunară, n = nr. luni)",
+    fOwnerCosts: "Costuri proprietar/lună = Preț × costuri% / 12",
+    fMonthlyInvest: "Investiție lunară = Buget - Rată - Costuri proprietar",
+    fInterestPaid: "Dobândă plătită = Rată × luni_plătite - (Credit - Sold)  (total plătit minus principal rambursat)",
+    fRemainingBalance: "Sold = Credit × ((1+r)^n - (1+r)^k) / ((1+r)^n - 1)  (capital rămas după k luni plătite)",
+    fAptValue: "Valoare apt = Preț × (1 + apreciere%)^ani  (dobândă compusă)",
+    fPortfolioBuy: "P(m) = P(m-1) × (1 + rand/12) + investiție  (simulare lună cu lună, randament compus + contribuție)",
+    fNetWorthBuy: "Avere netă = Valoare apt - Sold + Portofoliu",
+    fV2NetMonthly: "După mutare: net lunar = Buget - Rată - Costuri + Chirie primită×(1+inflație)^an - Chirie plătită×(1+inflație)^an  (chiriile cresc cu inflația)",
+    fTotalRent: "Total chirie = Σ(chirie × (1+inflație%)^an × 12)  (sumă pe toți anii, chirie ajustată cu inflația)",
+    fRentInYear: "Chirie în anul Y = Chirie × (1 + inflație%)^(Y-1)  (dobândă compusă pe inflație)",
+    fPortfolioRent: "P(m) = P(m-1) × (1 + rand/12) + max(0, Buget - Chirie curentă)  (pornește cu Avans, randament compus + surplus lunar)",
+    fNetWorthRent: "Avere netă = Portofoliu",
   },
   en: {
     title: "Comparison: Buy vs. Rent",
@@ -108,6 +124,22 @@ const translations = {
     note3: (v) => `✅ Owner costs (${v}%/yr) – repairs, tax, maintenance – reduce monthly investment`,
     note4: "✅ Monthly investments from budget minus payment/rent minus costs",
     note5: "⚠️ Not included: variable rate changes, capital gains tax, owner cost inflation",
+    showFormulas: "▶ Show formulas",
+    hideFormulas: "▼ Hide formulas",
+    fCredit: "Mortgage = Price + Transaction - Down payment",
+    fMonthlyPayment: "Payment = Mortgage × r(1+r)^n / ((1+r)^n - 1)  (fixed annuity; r = monthly rate, n = total months)",
+    fOwnerCosts: "Owner costs/mo = Price × costs% / 12",
+    fMonthlyInvest: "Monthly investment = Budget - Payment - Owner costs",
+    fInterestPaid: "Interest paid = Payment × months_paid - (Mortgage - Balance)  (total paid minus principal repaid)",
+    fRemainingBalance: "Balance = Mortgage × ((1+r)^n - (1+r)^k) / ((1+r)^n - 1)  (remaining principal after k months paid)",
+    fAptValue: "Apt value = Price × (1 + appreciation%)^years  (compound growth)",
+    fPortfolioBuy: "P(m) = P(m-1) × (1 + return/12) + investment  (month-by-month simulation, compound return + contribution)",
+    fNetWorthBuy: "Net worth = Apt value - Balance + Portfolio",
+    fV2NetMonthly: "After move: net monthly = Budget - Payment - Costs + Rental income×(1+inflation)^yr - Rent paid×(1+inflation)^yr  (rents grow with inflation)",
+    fTotalRent: "Total rent = Σ(rent × (1+inflation%)^yr × 12)  (sum over all years, rent adjusted for inflation)",
+    fRentInYear: "Rent in year Y = Rent × (1 + inflation%)^(Y-1)  (compound inflation)",
+    fPortfolioRent: "P(m) = P(m-1) × (1 + return/12) + max(0, Budget - Current rent)  (starts with Down payment, compound return + monthly surplus)",
+    fNetWorthRent: "Net worth = Portfolio",
   },
 };
 
@@ -277,6 +309,22 @@ export default function App() {
     <div className="bg-red-50 border border-red-300 text-red-700 text-xs font-semibold rounded p-2 mb-3">{t.budgetWarning(fmt(shortfall))}</div>
   ) : null;
 
+  const FormulaSection = ({ formulas }) => {
+    const [expanded, setExpanded] = useState(false);
+    return (
+      <div className="mt-3">
+        <button onClick={() => setExpanded(!expanded)} className="text-xs text-gray-500 hover:text-gray-700 cursor-pointer">
+          {expanded ? t.hideFormulas : t.showFormulas}
+        </button>
+        {expanded && (
+          <div className="bg-gray-50 rounded p-3 mt-2 text-xs font-mono space-y-1">
+            {formulas.map((f, i) => <div key={i}>{f}</div>)}
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const ic = "w-full p-2 border border-gray-300 rounded text-sm";
   const lc = "text-xs text-gray-500 mb-1";
 
@@ -353,6 +401,10 @@ export default function App() {
             <hr />
             <div className="flex justify-between font-bold text-base"><span>{t.netWorth}</span><span className="text-blue-700">{fmt(nw1)}€</span></div>
           </div>
+          <FormulaSection formulas={[
+            t.fCredit, t.fMonthlyPayment, t.fOwnerCosts, t.fMonthlyInvest,
+            t.fInterestPaid, t.fRemainingBalance, t.fAptValue, t.fPortfolioBuy, t.fNetWorthBuy,
+          ]} />
         </div>
 
         <div className={`bg-white rounded-lg shadow p-4 border-t-4 border-purple-500 ${highlight(nw2)}`}>
@@ -373,6 +425,11 @@ export default function App() {
             <hr />
             <div className="flex justify-between font-bold text-base"><span>{t.netWorth}</span><span className="text-purple-700">{fmt(nw2)}€</span></div>
           </div>
+          <FormulaSection formulas={[
+            t.fCredit, t.fMonthlyPayment, t.fOwnerCosts, t.fInterestPaid,
+            t.fRemainingBalance, t.fAptValue, t.fV2NetMonthly, t.fTotalRent,
+            t.fPortfolioBuy, t.fNetWorthBuy,
+          ]} />
         </div>
 
         <div className={`bg-white rounded-lg shadow p-4 border-t-4 border-green-500 ${highlight(nw3)}`}>
@@ -391,6 +448,10 @@ export default function App() {
             <hr />
             <div className="flex justify-between font-bold text-base"><span>{t.netWorth}</span><span className="text-green-700">{fmt(nw3)}€</span></div>
           </div>
+          <FormulaSection formulas={[
+            t.fCredit, t.fMonthlyPayment, t.fOwnerCosts, t.fMonthlyInvest,
+            t.fInterestPaid, t.fRemainingBalance, t.fAptValue, t.fPortfolioBuy, t.fNetWorthBuy,
+          ]} />
         </div>
 
         <div className={`bg-white rounded-lg shadow p-4 border-t-4 border-orange-500 ${highlight(nw4)}`}>
@@ -406,6 +467,9 @@ export default function App() {
             <hr />
             <div className="flex justify-between font-bold text-base"><span>{t.netWorth}</span><span className="text-orange-700">{fmt(nw4)}€</span></div>
           </div>
+          <FormulaSection formulas={[
+            t.fRentInYear, t.fTotalRent, t.fPortfolioRent, t.fNetWorthRent,
+          ]} />
         </div>
       </div>
 
