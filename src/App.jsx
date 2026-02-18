@@ -215,11 +215,11 @@ function mortgageInvestSimulation(monthlyBudget, payment, mortgageYears, ownerCo
 
 export default function App() {
   const defaultInputs = {
-    downPayment: "", interestRate: "", investReturn: "", newRent: "",
-    smallAptPrice: "", largeAptPrice: "", smallAptYears: "", largeAptYears: "",
-    horizon: "", appreciation: "", monthlyBudget: "",
-    rentInflation: "", transactionCostPct: "", ownerCostPct: "",
-    moveOutYears: "", rentalIncome: "",
+    downPayment: "30000", interestRate: "5.5", investReturn: "7", newRent: "500",
+    smallAptPrice: "75000", largeAptPrice: "120000", smallAptYears: "25", largeAptYears: "30",
+    horizon: "15", appreciation: "3", monthlyBudget: "800",
+    rentInflation: "3", transactionCostPct: "2", ownerCostPct: "1",
+    moveOutYears: "3", rentalIncome: "400",
   };
 
   const [lang, setLang] = useState(() => localStorage.getItem("bvr-lang") || "ro");
