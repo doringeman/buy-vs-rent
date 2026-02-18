@@ -16,6 +16,7 @@ const translations = {
     rentInflation: "Inflație chirie (%/an)",
     transactionCosts: "Costuri tranzacție cumpărare (%)",
     ownerCosts: "Costuri proprietar (%/an din val. apt)",
+    capitalGainsTax: "Impozit câștig capital (%)",
     smallAptPrice: "Preț apt. mic (€)",
     smallAptYears: "Ani credit apt. mic",
     largeAptPrice: "Preț apt. mare (€)",
@@ -40,6 +41,7 @@ const translations = {
     aptValueIn: (y) => `Valoare apt. în ${y} ani:`,
     investmentPortfolio: "Portofoliu investiții:",
     netWorth: "Avere netă:",
+    portfolioTax: "Impozit câștig capital:",
     initialRent: "Chirie inițială:",
     rentInYear: (y) => `Chirie în anul ${y}:`,
     totalRent: (y) => `Total chirie ${y} ani:`,
@@ -53,7 +55,7 @@ const translations = {
     note2: (v) => `✅ Costuri tranzacție (${v}%) – cresc creditul necesar`,
     note3: (v) => `✅ Costuri proprietar (${v}%/an) – reparații, impozit, fond rulment – scad investiția lunară`,
     note4: "✅ Investiții lunare din diferența buget - rată/chirie - costuri",
-    note5: "⚠️ Nu include: inflația ratei (dacă dobândă variabilă), impozit pe câștig capital, inflația costurilor proprietar",
+    note5: "⚠️ Nu include: inflația ratei (dacă dobândă variabilă), inflația costurilor proprietar",
     summary: "COMPARAȚIE AVERE NETĂ",
     copyLink: "Copiază link",
     linkCopied: "Link copiat!",
@@ -67,12 +69,13 @@ const translations = {
     fRemainingBalance: "Sold = Credit × ((1+r)^n - (1+r)^k) / ((1+r)^n - 1)  (capital rămas după k luni plătite)",
     fAptValue: "Valoare apt = Preț × (1 + apreciere%)^ani  (dobândă compusă)",
     fPortfolioBuy: "P(m) = P(m-1) × (1 + rand/12) + investiție  (simulare lună cu lună, randament compus + contribuție)",
-    fNetWorthBuy: "Avere netă = Valoare apt - Sold + Portofoliu",
+    fPortfolioTax: "Impozit = (Portofoliu - Contribuții) × impozit%  (se aplică doar pe câștig)",
+    fNetWorthBuy: "Avere netă = Valoare apt - Sold + Portofoliu - Impozit",
     fV2NetMonthly: "După mutare: net lunar = Buget - Rată - Costuri + Chirie primită×(1+inflație)^an - Chirie plătită×(1+inflație)^an  (chiriile cresc cu inflația)",
     fTotalRent: "Total chirie = Σ(chirie × (1+inflație%)^an × 12)  (sumă pe toți anii, chirie ajustată cu inflația)",
     fRentInYear: "Chirie în anul Y = Chirie × (1 + inflație%)^(Y-1)  (dobândă compusă pe inflație)",
     fPortfolioRent: "P(m) = P(m-1) × (1 + rand/12) + max(0, Buget - Chirie curentă)  (pornește cu Avans, randament compus + surplus lunar)",
-    fNetWorthRent: "Avere netă = Portofoliu",
+    fNetWorthRent: "Avere netă = Portofoliu - Impozit",
   },
   en: {
     title: "Comparison: Buy vs. Rent",
@@ -89,6 +92,7 @@ const translations = {
     rentInflation: "Rent inflation (%/yr)",
     transactionCosts: "Transaction costs (%)",
     ownerCosts: "Owner costs (%/yr of apt value)",
+    capitalGainsTax: "Capital gains tax (%)",
     smallAptPrice: "Small apt. price (€)",
     smallAptYears: "Mortgage years (small apt.)",
     largeAptPrice: "Large apt. price (€)",
@@ -113,6 +117,7 @@ const translations = {
     aptValueIn: (y) => `Apt. value in ${y} yrs:`,
     investmentPortfolio: "Investment portfolio:",
     netWorth: "Net worth:",
+    portfolioTax: "Capital gains tax:",
     initialRent: "Initial rent:",
     rentInYear: (y) => `Rent in year ${y}:`,
     totalRent: (y) => `Total rent ${y} yrs:`,
@@ -126,7 +131,7 @@ const translations = {
     note2: (v) => `✅ Transaction costs (${v}%) – increases mortgage`,
     note3: (v) => `✅ Owner costs (${v}%/yr) – repairs, tax, maintenance – reduce monthly investment`,
     note4: "✅ Monthly investments from budget minus payment/rent minus costs",
-    note5: "⚠️ Not included: variable rate changes, capital gains tax, owner cost inflation",
+    note5: "⚠️ Not included: variable rate changes, owner cost inflation",
     summary: "NET WORTH COMPARISON",
     copyLink: "Copy link",
     linkCopied: "Link copied!",
@@ -140,12 +145,13 @@ const translations = {
     fRemainingBalance: "Balance = Mortgage × ((1+r)^n - (1+r)^k) / ((1+r)^n - 1)  (remaining principal after k months paid)",
     fAptValue: "Apt value = Price × (1 + appreciation%)^years  (compound growth)",
     fPortfolioBuy: "P(m) = P(m-1) × (1 + return/12) + investment  (month-by-month simulation, compound return + contribution)",
-    fNetWorthBuy: "Net worth = Apt value - Balance + Portfolio",
+    fPortfolioTax: "Tax = (Portfolio - Contributions) × tax%  (applied only on gains)",
+    fNetWorthBuy: "Net worth = Apt value - Balance + Portfolio - Tax",
     fV2NetMonthly: "After move: net monthly = Budget - Payment - Costs + Rental income×(1+inflation)^yr - Rent paid×(1+inflation)^yr  (rents grow with inflation)",
     fTotalRent: "Total rent = Σ(rent × (1+inflation%)^yr × 12)  (sum over all years, rent adjusted for inflation)",
     fRentInYear: "Rent in year Y = Rent × (1 + inflation%)^(Y-1)  (compound inflation)",
     fPortfolioRent: "P(m) = P(m-1) × (1 + return/12) + max(0, Budget - Current rent)  (starts with Down payment, compound return + monthly surplus)",
-    fNetWorthRent: "Net worth = Portfolio",
+    fNetWorthRent: "Net worth = Portfolio - Tax",
   },
 };
 
@@ -184,16 +190,20 @@ function totalRentWithInflation(monthlyRent, annualInflation, years) {
 function rentInvestSimulation(downPayment, monthlyBudget, monthlyRent, rentInflation, investReturn, years) {
   const r = investReturn / 100 / 12;
   let portfolio = downPayment;
+  let contributions = downPayment;
   for (let m = 0; m < years * 12; m++) {
     const currentRent = monthlyRent * Math.pow(1 + rentInflation / 100, Math.floor(m / 12));
-    portfolio = portfolio * (1 + r) + Math.max(0, monthlyBudget - currentRent);
+    const contrib = Math.max(0, monthlyBudget - currentRent);
+    portfolio = portfolio * (1 + r) + contrib;
+    contributions += contrib;
   }
-  return portfolio;
+  return { portfolio, contributions };
 }
 
 function buyRentOutSimulation(monthlyBudget, payment, mortgageYears, ownerCostMonthly, rentalIncome, moveOutYears, monthlyRent, rentInflation, investReturn, horizon) {
   const r = investReturn / 100 / 12;
   let portfolio = 0;
+  let contributions = 0;
   for (let m = 0; m < horizon * 12; m++) {
     const year = Math.floor(m / 12);
     const currentPayment = year < mortgageYears ? payment : 0;
@@ -204,19 +214,24 @@ function buyRentOutSimulation(monthlyBudget, payment, mortgageYears, ownerCostMo
       const currentRent = monthlyRent * Math.pow(1 + rentInflation / 100, year);
       monthlyNet += currentRentalIncome - currentRent;
     }
-    portfolio = portfolio * (1 + r) + Math.max(0, monthlyNet);
+    const contrib = Math.max(0, monthlyNet);
+    portfolio = portfolio * (1 + r) + contrib;
+    contributions += contrib;
   }
-  return portfolio;
+  return { portfolio, contributions };
 }
 
 function mortgageInvestSimulation(monthlyBudget, payment, mortgageYears, ownerCostMonthly, investReturn, horizon) {
   const r = investReturn / 100 / 12;
   let portfolio = 0;
+  let contributions = 0;
   for (let m = 0; m < horizon * 12; m++) {
     const currentPayment = Math.floor(m / 12) < mortgageYears ? payment : 0;
-    portfolio = portfolio * (1 + r) + Math.max(0, monthlyBudget - currentPayment - ownerCostMonthly);
+    const contrib = Math.max(0, monthlyBudget - currentPayment - ownerCostMonthly);
+    portfolio = portfolio * (1 + r) + contrib;
+    contributions += contrib;
   }
-  return portfolio;
+  return { portfolio, contributions };
 }
 
 const hashKeys = {
@@ -224,7 +239,7 @@ const hashKeys = {
   sp: "smallAptPrice", lp: "largeAptPrice", sy: "smallAptYears", ly: "largeAptYears",
   h: "horizon", ap: "appreciation", mb: "monthlyBudget",
   ri: "rentInflation", tc: "transactionCostPct", oc: "ownerCostPct",
-  mo: "moveOutYears", rn: "rentalIncome",
+  mo: "moveOutYears", rn: "rentalIncome", cg: "capitalGainsTax",
 };
 const hashKeysReverse = Object.fromEntries(Object.entries(hashKeys).map(([k, v]) => [v, k]));
 
@@ -253,7 +268,7 @@ export default function App() {
     smallAptPrice: "75000", largeAptPrice: "120000", smallAptYears: "25", largeAptYears: "30",
     horizon: "15", appreciation: "3", monthlyBudget: "800",
     rentInflation: "3", transactionCostPct: "2", ownerCostPct: "1",
-    moveOutYears: "3", rentalIncome: "400",
+    moveOutYears: "3", rentalIncome: "400", capitalGainsTax: "10",
   };
 
   const [lang, setLang] = useState(() => localStorage.getItem("bvr-lang") || "ro");
@@ -292,6 +307,7 @@ export default function App() {
   const rentInflation = v("rentInflation"), transactionCostPct = v("transactionCostPct");
   const ownerCostPct = v("ownerCostPct");
   const moveOutYears = v("moveOutYears"), rentalIncome = v("rentalIncome");
+  const capitalGainsTax = v("capitalGainsTax");
 
   // V1 & V2: small apt
   const txCostSmall = smallAptPrice * transactionCostPct / 100;
@@ -318,23 +334,31 @@ export default function App() {
   for (let y = 0; y < horizon; y++) totalOwnerCostLarge += compoundGrowth(largeAptPrice, appreciation, y) * ownerCostPct / 100;
 
   // V1: buy small, live in it
-  const portfolioV1 = mortgageInvestSimulation(monthlyBudget, mSmall.payment, smallAptYears, ownerCostMonthlySmall, investReturn, horizon);
+  const simV1 = mortgageInvestSimulation(monthlyBudget, mSmall.payment, smallAptYears, ownerCostMonthlySmall, investReturn, horizon);
+  const taxV1 = Math.max(0, (simV1.portfolio - simV1.contributions) * capitalGainsTax / 100);
+  const portfolioV1 = simV1.portfolio;
   const extraMonthlyV1 = Math.max(0, monthlyBudget - mSmall.payment - ownerCostMonthlySmall);
   const extraAfterV1 = monthlyBudget - ownerCostMonthlySmall;
   const yearsAfterMortgageV1 = Math.max(0, horizon - smallAptYears);
 
   // V2: buy small, rent it out after moveOutYears, move to rented place
-  const portfolioV2 = buyRentOutSimulation(monthlyBudget, mSmall.payment, smallAptYears, ownerCostMonthlySmall, rentalIncome, moveOutYears, newRent, rentInflation, investReturn, horizon);
+  const simV2 = buyRentOutSimulation(monthlyBudget, mSmall.payment, smallAptYears, ownerCostMonthlySmall, rentalIncome, moveOutYears, newRent, rentInflation, investReturn, horizon);
+  const taxV2 = Math.max(0, (simV2.portfolio - simV2.contributions) * capitalGainsTax / 100);
+  const portfolioV2 = simV2.portfolio;
   const totalRentV2 = totalRentWithInflation(newRent, rentInflation, Math.max(0, horizon - moveOutYears));
 
   // V3: buy large, live in it
-  const portfolioV3 = mortgageInvestSimulation(monthlyBudget, mLarge.payment, largeAptYears, ownerCostMonthlyLarge, investReturn, horizon);
+  const simV3 = mortgageInvestSimulation(monthlyBudget, mLarge.payment, largeAptYears, ownerCostMonthlyLarge, investReturn, horizon);
+  const taxV3 = Math.max(0, (simV3.portfolio - simV3.contributions) * capitalGainsTax / 100);
+  const portfolioV3 = simV3.portfolio;
   const extraMonthlyV3 = Math.max(0, monthlyBudget - mLarge.payment - ownerCostMonthlyLarge);
   const yearsAfterMortgageV3 = Math.max(0, horizon - largeAptYears);
 
   // V4: rent + invest
   const totalRentV4 = totalRentWithInflation(newRent, rentInflation, horizon);
-  const portfolioV4 = rentInvestSimulation(downPayment, monthlyBudget, newRent, rentInflation, investReturn, horizon);
+  const simV4 = rentInvestSimulation(downPayment, monthlyBudget, newRent, rentInflation, investReturn, horizon);
+  const taxV4 = Math.max(0, (simV4.portfolio - simV4.contributions) * capitalGainsTax / 100);
+  const portfolioV4 = simV4.portfolio;
   const extraMonthlyV4 = Math.max(0, monthlyBudget - newRent);
 
   const shortfallV1 = mSmall.payment + ownerCostMonthlySmall - monthlyBudget;
@@ -342,10 +366,10 @@ export default function App() {
   const shortfallV3 = mLarge.payment + ownerCostMonthlyLarge - monthlyBudget;
   const shortfallV4 = newRent - monthlyBudget;
 
-  const nw1 = aptValueSmall - balanceSmall + portfolioV1;
-  const nw2 = aptValueSmall - balanceSmall + portfolioV2;
-  const nw3 = aptValueLarge - balanceLarge + portfolioV3;
-  const nw4 = portfolioV4;
+  const nw1 = aptValueSmall - balanceSmall + portfolioV1 - taxV1;
+  const nw2 = aptValueSmall - balanceSmall + portfolioV2 - taxV2;
+  const nw3 = aptValueLarge - balanceLarge + portfolioV3 - taxV3;
+  const nw4 = portfolioV4 - taxV4;
 
   const best = Math.max(nw1, nw2, nw3, nw4);
   const highlight = (nw) => nw === best ? "ring-2 ring-yellow-400" : "";
@@ -412,6 +436,7 @@ export default function App() {
           <div><div className={lc}>{t.rentInflation}</div><input type="number" step="0.1" className={ic} value={inputs.rentInflation} onChange={set("rentInflation")} /></div>
           <div><div className={lc}>{t.transactionCosts}</div><input type="number" step="0.1" className={ic} value={inputs.transactionCostPct} onChange={set("transactionCostPct")} /></div>
           <div><div className={lc}>{t.ownerCosts}</div><input type="number" step="0.1" className={ic} value={inputs.ownerCostPct} onChange={set("ownerCostPct")} /></div>
+          <div><div className={lc}>{t.capitalGainsTax}</div><input type="number" step="1" className={ic} value={inputs.capitalGainsTax} onChange={set("capitalGainsTax")} /></div>
         </div>
       </div>
 
@@ -481,12 +506,13 @@ export default function App() {
             <div className="flex justify-between"><span>{t.remainingBalance}</span><span className="font-semibold">{balanceSmall > 0 ? fmt(balanceSmall) + "€" : "0€ ✓"}</span></div>
             <div className="flex justify-between"><span>{t.aptValueIn(horizon)}</span><span className="font-semibold text-green-600">{fmt(aptValueSmall)}€</span></div>
             <div className="flex justify-between"><span>{t.investmentPortfolio}</span><span className="font-semibold text-green-600">{fmt(portfolioV1)}€</span></div>
+            {taxV1 > 0 && <div className="flex justify-between"><span>{t.portfolioTax}</span><span className="font-semibold text-red-600">-{fmt(taxV1)}€</span></div>}
             <hr />
             <div className="flex justify-between font-bold text-base"><span>{t.netWorth}</span><span className="text-blue-700">{fmt(nw1)}€</span></div>
           </div>
           <FormulaSection formulas={[
             t.fCredit, t.fMonthlyPayment, t.fOwnerCosts, t.fMonthlyInvest,
-            t.fInterestPaid, t.fRemainingBalance, t.fAptValue, t.fPortfolioBuy, t.fNetWorthBuy,
+            t.fInterestPaid, t.fRemainingBalance, t.fAptValue, t.fPortfolioBuy, t.fPortfolioTax, t.fNetWorthBuy,
           ]} />
         </div>
 
@@ -505,13 +531,14 @@ export default function App() {
             <div className="flex justify-between"><span>{t.remainingBalance}</span><span className="font-semibold">{balanceSmall > 0 ? fmt(balanceSmall) + "€" : "0€ ✓"}</span></div>
             <div className="flex justify-between"><span>{t.aptValueIn(horizon)}</span><span className="font-semibold text-green-600">{fmt(aptValueSmall)}€</span></div>
             <div className="flex justify-between"><span>{t.investmentPortfolio}</span><span className="font-semibold text-green-600">{fmt(portfolioV2)}€</span></div>
+            {taxV2 > 0 && <div className="flex justify-between"><span>{t.portfolioTax}</span><span className="font-semibold text-red-600">-{fmt(taxV2)}€</span></div>}
             <hr />
             <div className="flex justify-between font-bold text-base"><span>{t.netWorth}</span><span className="text-purple-700">{fmt(nw2)}€</span></div>
           </div>
           <FormulaSection formulas={[
             t.fCredit, t.fMonthlyPayment, t.fOwnerCosts, t.fInterestPaid,
             t.fRemainingBalance, t.fAptValue, t.fV2NetMonthly, t.fTotalRent,
-            t.fPortfolioBuy, t.fNetWorthBuy,
+            t.fPortfolioBuy, t.fPortfolioTax, t.fNetWorthBuy,
           ]} />
         </div>
 
@@ -528,12 +555,13 @@ export default function App() {
             <div className="flex justify-between"><span>{t.remainingBalance}</span><span className="font-semibold">{balanceLarge > 0 ? fmt(balanceLarge) + "€" : "0€ ✓"}</span></div>
             <div className="flex justify-between"><span>{t.aptValueIn(horizon)}</span><span className="font-semibold text-green-600">{fmt(aptValueLarge)}€</span></div>
             <div className="flex justify-between"><span>{t.investmentPortfolio}</span><span className="font-semibold text-green-600">{fmt(portfolioV3)}€</span></div>
+            {taxV3 > 0 && <div className="flex justify-between"><span>{t.portfolioTax}</span><span className="font-semibold text-red-600">-{fmt(taxV3)}€</span></div>}
             <hr />
             <div className="flex justify-between font-bold text-base"><span>{t.netWorth}</span><span className="text-green-700">{fmt(nw3)}€</span></div>
           </div>
           <FormulaSection formulas={[
             t.fCredit, t.fMonthlyPayment, t.fOwnerCosts, t.fMonthlyInvest,
-            t.fInterestPaid, t.fRemainingBalance, t.fAptValue, t.fPortfolioBuy, t.fNetWorthBuy,
+            t.fInterestPaid, t.fRemainingBalance, t.fAptValue, t.fPortfolioBuy, t.fPortfolioTax, t.fNetWorthBuy,
           ]} />
         </div>
 
@@ -546,12 +574,13 @@ export default function App() {
             <div className="flex justify-between"><span>{t.rentInYear(horizon)}</span><span className="font-semibold text-red-500">{fmt(newRent * Math.pow(1 + rentInflation / 100, Math.max(0, horizon - 1)))}€{t.perMonth}</span></div>
             <div className="flex justify-between"><span>{t.totalRent(horizon)}</span><span className="font-semibold text-red-600">{fmt(totalRentV4)}€</span></div>
             <div className="flex justify-between"><span>{t.investmentPortfolio}</span><span className="font-semibold text-green-600">{fmt(portfolioV4)}€</span></div>
+            {taxV4 > 0 && <div className="flex justify-between"><span>{t.portfolioTax}</span><span className="font-semibold text-red-600">-{fmt(taxV4)}€</span></div>}
             <div className="flex justify-between"><span>{t.property}</span><span className="font-semibold text-gray-400">0€</span></div>
             <hr />
             <div className="flex justify-between font-bold text-base"><span>{t.netWorth}</span><span className="text-orange-700">{fmt(nw4)}€</span></div>
           </div>
           <FormulaSection formulas={[
-            t.fRentInYear, t.fTotalRent, t.fPortfolioRent, t.fNetWorthRent,
+            t.fRentInYear, t.fTotalRent, t.fPortfolioRent, t.fPortfolioTax, t.fNetWorthRent,
           ]} />
         </div>
       </div>
