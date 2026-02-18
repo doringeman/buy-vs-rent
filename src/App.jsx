@@ -26,7 +26,7 @@ const translations = {
     v1Title: (p) => `V1: Apt. mic (${p}€)`,
     v2Title: (p) => `V2: Cumpăr mic (${p}€), dau în chirie`,
     v3Title: (p) => `V3: Apt. mare (${p}€)`,
-    v4Title: "V4: Chirie + Investiții",
+    v4Title: (r) => `V4: Chirie (${r}€) + Investiții`,
     v1Desc: (d, t, c) => `Avans ${d}€ + tranzacție ${t}€ + credit ${c}€`,
     v2Desc: (d, t, c, y, r) => `Avans ${d}€ + tranzacție ${t}€ + credit ${c}€ · după ${y} ani: dau în chirie (${r}€) și mă mut`,
     v3Desc: (d, t, c) => `Avans ${d}€ + tranzacție ${t}€ + credit ${c}€`,
@@ -97,7 +97,7 @@ const translations = {
     v1Title: (p) => `V1: Small apt. (${p}€)`,
     v2Title: (p) => `V2: Buy small (${p}€), rent out`,
     v3Title: (p) => `V3: Large apt. (${p}€)`,
-    v4Title: "V4: Rent + Invest",
+    v4Title: (r) => `V4: Rent (${r}€) + Invest`,
     v1Desc: (d, t, c) => `Down payment ${d}€ + transaction ${t}€ + mortgage ${c}€`,
     v2Desc: (d, t, c, y, r) => `Down payment ${d}€ + transaction ${t}€ + mortgage ${c}€ · after ${y} yrs: rent out (${r}€) and move`,
     v3Desc: (d, t, c) => `Down payment ${d}€ + transaction ${t}€ + mortgage ${c}€`,
@@ -391,7 +391,7 @@ export default function App() {
           { label: t.v1Title(fmt(smallAptPrice)), color: "bg-blue-500", nw: nw1 },
           { label: t.v2Title(fmt(smallAptPrice)), color: "bg-purple-500", nw: nw2 },
           { label: t.v3Title(fmt(largeAptPrice)), color: "bg-green-500", nw: nw3 },
-          { label: t.v4Title, color: "bg-orange-500", nw: nw4 },
+          { label: t.v4Title(fmt(newRent)), color: "bg-orange-500", nw: nw4 },
         ].sort((a, b) => b.nw - a.nw);
         return (
           <div className="bg-white rounded-lg shadow p-4 mb-4">
@@ -490,7 +490,7 @@ export default function App() {
         </div>
 
         <div className={`bg-white rounded-lg shadow p-4 border-t-4 border-orange-500 ${highlight(nw4)}`}>
-          <h3 className="font-bold text-orange-700 mb-2">{t.v4Title}</h3>
+          <h3 className="font-bold text-orange-700 mb-2">{t.v4Title(fmt(newRent))}</h3>
           <div className="text-xs text-gray-500 mb-3">{t.v4Desc(fmt(downPayment), fmt(extraMonthlyV4))}</div>
           <Warning shortfall={shortfallV4} />
           <div className="space-y-2 text-sm">
